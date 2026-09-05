@@ -112,6 +112,7 @@
   .chart .xh{stroke:var(--ink);stroke-width:1;opacity:0}
   .chart .xh-pt{fill:var(--ink);opacity:0}
   .chart .hit{fill:transparent;cursor:crosshair;touch-action:pan-y}
+  .curve{touch-action:pan-y}
   .tip{position:absolute;pointer-events:none;opacity:0;transform:translate(-50%,-100%);background:var(--ink);color:#fff;border-radius:10px;
     padding:6px 9px 5px;font-size:10.5px;letter-spacing:.06em;white-space:nowrap;transition:opacity .12s}
   .tip b{font-family:var(--display);font-size:13px;font-weight:700;letter-spacing:.04em;margin-left:6px}
@@ -502,7 +503,7 @@ function closeSheet(velocity){
 (() => {
   let x0 = 0, y0 = 0, axis = null, hist = [], dx = 0, W = 0;
   const shoe = makeSpring(x => { panelLeft.style.transform = `translateX(${x}px)`; panelLeft.style.opacity = 1 - Math.min(.6, Math.abs(x) / (W || 1)); });
-  panelLeft.addEventListener('pointerdown', e => { if (!isMobile()) return; axis = null; x0 = e.clientX; y0 = e.clientY; hist = [{ t: e.timeStamp, x: 0 }]; W = panelLeft.offsetWidth; shoe.stop(); });
+  panelLeft.addEventListener('pointerdown', e => { if (!isMobile()) return; if (e.target.closest('.curve')) { axis = 'y'; return; } axis = null; x0 = e.clientX; y0 = e.clientY; hist = [{ t: e.timeStamp, x: 0 }]; W = panelLeft.offsetWidth; shoe.stop(); });
   panelLeft.addEventListener('pointermove', e => {
     if (!isMobile() || axis === 'y') return;
     const mx = e.clientX - x0, my = e.clientY - y0;
