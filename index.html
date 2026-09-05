@@ -28,8 +28,10 @@
     background-image:radial-gradient(circle at center, rgba(10,10,10,.045) 1px, transparent 1.4px);background-size:24px 24px;
     color:var(--ink);font-family:var(--body);-webkit-font-smoothing:antialiased;line-height:1.5}
   body.lock{overflow:hidden}
+  body.lock-fixed{position:fixed;width:100%;overflow:hidden}
   ::selection{background:var(--accent);color:#fff}
-  button{font-family:inherit}
+  button{font-family:inherit;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+  a,button{-webkit-touch-callout:none}
   .wrap{max-width:var(--maxw);margin:0 auto;padding:0 clamp(18px,4vw,44px)}
   .k{font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--faint)}
 
@@ -60,12 +62,14 @@
   .card{display:block;width:100%;min-width:0;text-align:left;cursor:pointer;position:relative;background:var(--surface);border:1px solid var(--line);
     border-radius:var(--r-card);padding:16px 16px 15px;box-shadow:var(--shadow-1);
     transition:transform .32s var(--ease), box-shadow .32s var(--ease), border-color .32s, opacity .2s}
-  .card:hover,.card:focus-visible{transform:translateY(-4px);box-shadow:var(--shadow-2);border-color:#dcdbd6;outline:none}
+  @media (hover:hover){.card:hover{transform:translateY(-4px);box-shadow:var(--shadow-2);border-color:#dcdbd6}}
+  .card:focus-visible{transform:translateY(-4px);box-shadow:var(--shadow-2);border-color:#dcdbd6;outline:none}
+  .card:active{transform:scale(.975);transition-duration:.09s}
   .card:focus-visible{box-shadow:var(--shadow-2),0 0 0 2.5px var(--accent)}
   .card.lifted{opacity:0;pointer-events:none}
   .card-img{height:150px;display:flex;align-items:center;justify-content:center;background:var(--well);border-radius:12px;overflow:hidden}
   .card-img img{width:100%;height:100%;object-fit:contain;mix-blend-mode:multiply;transition:transform .55s var(--ease)}
-  .card:hover .card-img img{transform:scale(1.06)}
+  @media (hover:hover){.card:hover .card-img img{transform:scale(1.06)}}
   .card-row{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-top:13px}
   .model{font-family:var(--display);font-weight:700;font-size:26px;letter-spacing:.02em;line-height:1}
   .price{font-family:var(--display);font-weight:700;font-size:18px;color:var(--accent);font-variant-numeric:tabular-nums;white-space:nowrap}
@@ -79,7 +83,10 @@
   .backdrop{position:absolute;inset:0;background:rgba(28,28,26,.36);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);opacity:0;transition:opacity .38s var(--ease)}
   .overlay.show .backdrop.in{opacity:1}
   .panel{position:relative;width:min(1000px,100%);max-height:100%;overflow:auto;background:var(--surface);border:1px solid var(--line);
-    border-radius:var(--r-panel);box-shadow:var(--shadow-3);display:grid;grid-template-columns:1fr 1fr;opacity:0;scrollbar-width:thin}
+    border-radius:var(--r-panel);box-shadow:var(--shadow-3);opacity:0;scrollbar-width:thin}
+  .sheet-body{display:grid;grid-template-columns:1fr 1fr}
+  .sheet-head,.sheet-bar{display:none}
+  #page{transform-origin:50% 0}
   .panel.in{opacity:1;transition:opacity .22s ease}
   .panel.out{opacity:0;transition:opacity .16s ease}
 
@@ -104,7 +111,7 @@
   @keyframes ring{0%{transform:scale(.6);opacity:.6}80%{transform:scale(2.2);opacity:0}100%{opacity:0}}
   .chart .xh{stroke:var(--ink);stroke-width:1;opacity:0}
   .chart .xh-pt{fill:var(--ink);opacity:0}
-  .chart .hit{fill:transparent;cursor:crosshair}
+  .chart .hit{fill:transparent;cursor:crosshair;touch-action:pan-y}
   .tip{position:absolute;pointer-events:none;opacity:0;transform:translate(-50%,-100%);background:var(--ink);color:#fff;border-radius:10px;
     padding:6px 9px 5px;font-size:10.5px;letter-spacing:.06em;white-space:nowrap;transition:opacity .12s}
   .tip b{font-family:var(--display);font-size:13px;font-weight:700;letter-spacing:.04em;margin-left:6px}
@@ -168,12 +175,44 @@
 
   @media (max-width:820px){
     .brand .tag{display:none}
-    .panel{grid-template-columns:1fr}
-    .panel-left{border-right:none;border-bottom:1px solid var(--line);border-radius:var(--r-panel) var(--r-panel) 0 0}
-    .panel-img{padding:28px 24px 8px}
-    .panel-img img{max-height:200px}
-    .curve{padding:6px 22px 22px}
+    .k{font-size:11.5px}
+    /* the detail view becomes a bottom sheet */
+    .overlay{padding:0;align-items:flex-end}
+    .backdrop{transition:none}
+    .panel{width:100%;max-height:none;height:min(93dvh,93vh);border-radius:28px 28px 0 0;border-bottom:0;box-shadow:0 -20px 60px rgba(10,10,10,.18);
+      display:flex;flex-direction:column;overflow:hidden;opacity:1;transform:translateY(100%);will-change:transform}
+    .panel.in,.panel.out{opacity:1;transition:none}
+    .nav,.close{display:none}
+    .sheet-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 14px 10px 20px;position:relative;touch-action:none;cursor:grab;
+      border-bottom:1px solid var(--line);flex:none;user-select:none;-webkit-user-select:none}
+    .grabber{position:absolute;top:7px;left:50%;width:40px;height:5px;border-radius:3px;background:#D6D5D0;transform:translateX(-50%)}
+    .sheet-title{display:flex;align-items:baseline;gap:12px;margin-top:12px}
+    .sheet-title .k{color:var(--ink);font-family:var(--display);font-weight:700;font-size:12.5px;letter-spacing:.1em}
+    .sheet-hint{font-size:11.5px;letter-spacing:.04em;color:var(--muted)}
+    .sheet-close{margin-top:10px;width:40px;height:40px;border-radius:50%;background:var(--ground);border:1px solid var(--line);color:var(--ink);font-size:15px;
+      display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none}
+    .sheet-close:active{transform:scale(.94)}
+    .sheet-body{display:block;flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;scrollbar-width:none}
+    .sheet-body::-webkit-scrollbar{display:none}
+    .panel-left{border-right:none;border-bottom:1px solid var(--line);border-radius:0;touch-action:pan-y;will-change:transform}
+    .panel-img{padding:22px 24px 6px}
+    .panel-img img{max-height:210px}
+    .curve{padding:4px 22px 20px}
+    .chart{height:140px}
+    .panel-info{padding:24px 22px 28px}
+    .p-idx{display:none}
+    .p-model{font-size:58px;margin-top:0}
+    .p-story{font-size:15.5px;line-height:1.6}
+    .more{margin-top:26px}
     .kv,.mk{grid-template-columns:repeat(2,1fr)}
+    .sheet-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px calc(10px + env(safe-area-inset-bottom));
+      background:rgba(255,255,255,.72);backdrop-filter:blur(18px) saturate(1.5);-webkit-backdrop-filter:blur(18px) saturate(1.5);border-top:1px solid var(--line);flex:none}
+    .bar-btn{width:48px;height:44px;border-radius:14px;background:var(--surface);border:1px solid var(--line);color:var(--ink);display:flex;align-items:center;justify-content:center;cursor:pointer;
+      transition:transform .1s ease-out,background .15s}
+    .bar-btn svg{width:16px;height:16px;stroke:currentColor;stroke-width:2.2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+    .bar-btn:active{transform:scale(.94);background:var(--ground)}
+    .bar-idx{font-family:var(--display);font-weight:700;font-size:14px;letter-spacing:.12em;color:var(--ink)}
+    .rv{transform:translateY(6px)}
     h1{font-size:15vw;white-space:normal} h1 .m{display:inline}
     .lede{font-size:15px}
     .grid-hint span:last-child{display:none}
@@ -182,6 +221,7 @@
     .colorway{font-size:10.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .card-num{font-size:11.5px}
   }
+  @media (prefers-reduced-transparency:reduce){ .sheet-bar,header{background:var(--surface);backdrop-filter:none;-webkit-backdrop-filter:none} .backdrop{backdrop-filter:none;-webkit-backdrop-filter:none;background:rgba(28,28,26,.55)} }
   @media (prefers-reduced-motion:reduce){
     .rv{opacity:1;transform:none} .panel.in .rv{animation:none}
     .card,.card-img img,.close{transition:none} .dot,.chart .pulse{animation:none} .pane{animation:none}
@@ -191,6 +231,7 @@
 <body style="margin:0">
 
 
+<div id="page">
 <header>
   <div class="wrap bar">
     <div class="brand"><span class="dot" aria-hidden="true"></span><span class="name">VAULT</span><span class="tag">New Balance Archive</span></div>
@@ -212,9 +253,10 @@
   <div class="wrap foot">
     <span>Vault &middot; Sneaker Collection Concept</span>
     <span>Prices indicative &middot; resale market snapshot</span>
-    <span class="mkid">NB / 25 / 0004</span>
+    <span class="mkid">NB / 25 / 0005</span>
   </div>
 </footer>
+</div>
 
 <div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-labelledby="pModel">
   <div class="backdrop" id="backdrop"></div>
@@ -222,7 +264,13 @@
     <button class="nav prev" id="prevBtn" aria-label="Previous sneaker"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
     <button class="nav next" id="nextBtn" aria-label="Next sneaker"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
     <button class="close" id="closeBtn" aria-label="Close">&#10005;</button>
-    <div class="panel-left">
+    <div class="sheet-head" id="sheetHead">
+      <span class="grabber" aria-hidden="true"></span>
+      <div class="sheet-title"><span class="k" id="shIdx"></span><span class="sheet-hint">Swipe the shoe for next</span></div>
+      <button class="sheet-close" id="sheetClose" aria-label="Close">&#10005;</button>
+    </div>
+    <div class="sheet-body" id="sheetBody">
+    <div class="panel-left" id="panelLeft">
       <div class="panel-img" id="panelImgBox"><img id="pImg" src="" alt=""></div>
       <div class="curve rv" style="--i:4">
         <div class="curve-head"><span class="k">Value over time</span><span class="rng" id="cRange"></span></div>
@@ -251,6 +299,12 @@
         </div>
       </div>
     </div>
+    </div>
+    <div class="sheet-bar" id="sheetBar">
+      <button class="bar-btn" id="barPrev" aria-label="Previous sneaker"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <span class="bar-idx" id="barIdx"></span>
+      <button class="bar-btn" id="barNext" aria-label="Next sneaker"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
+    </div>
   </div>
 </div>
 
@@ -276,6 +330,7 @@ function fill(i){
   const chg = Math.round((s.price / launch - 1) * 100);
   $('pImg').src = s.img; $('pImg').alt = `New Balance ${s.name} — ${s.sub}`;
   $('pIdx').textContent = pad(i+1) + ' / 025';
+  $('shIdx').textContent = pad(i+1) + ' / 025'; $('barIdx').textContent = pad(i+1) + ' / 025';
   $('pModel').textContent = s.name;
   $('pColor').textContent = s.sub;
   $('hvNow').textContent = fmt$(s.price);
@@ -338,7 +393,7 @@ function renderCurve(s){
     <rect class="hit" id="hit" x="${L}" y="${T - 10}" width="${W - L - R + 20}" height="${HT - T - B + 10}"/>`;
   $('cRange').textContent = yr(x0) + ' — 2026';
   const tip = $('tip'), xh = $('xh'), xhpt = $('xhpt');
-  $('hit').onmousemove = e => {
+  $('hit').onpointermove = $('hit').onpointerdown = e => {
     const r = svg.getBoundingClientRect(); const fx = (e.clientX - r.left) / r.width * W;
     const year = Math.min(2026, Math.max(x0, x0 + (fx - L) / (W - L - R) * (x1 - x0)));
     const v = valueAt(H, year), cx = X(year), cy = Y(v);
@@ -347,7 +402,7 @@ function renderCurve(s){
     tip.innerHTML = `${year.toFixed(0)}<b>${fmt$(v)}</b>`;
     tip.style.left = (cx / W * r.width) + 'px'; tip.style.top = (svg.offsetTop + cy / HT * r.height - 10) + 'px'; tip.style.opacity = 1;
   };
-  $('hit').onmouseleave = () => { xh.style.opacity = 0; xhpt.style.opacity = 0; tip.style.opacity = 0; };
+  $('hit').onpointerleave = $('hit').onpointerup = () => { xh.style.opacity = 0; xhpt.style.opacity = 0; tip.style.opacity = 0; };
 }
 
 // ---- open / close with shared-element morph ----
@@ -366,8 +421,118 @@ function ghosts(src){
   const im = document.createElement('div'); im.className = 'ghost ghost-img'; im.innerHTML = `<img src="${src}" alt="">`;
   document.body.append(bg, im); return {bg, im};
 }
+// ---- spring (semi-implicit Euler; response + damping ratio, Apple-style) ----
+function makeSpring(onUpdate){
+  let x = 0, v = 0, target = 0, k = 0, c = 0, raf = 0, last = 0, done = null;
+  function step(t){
+    const dt = Math.min(0.032, (t - last) / 1000); last = t;
+    const a = -k * (x - target) - c * v; v += a * dt; x += v * dt; onUpdate(x);
+    if (Math.abs(x - target) < 0.4 && Math.abs(v) < 12){ x = target; v = 0; onUpdate(x); raf = 0; const d = done; done = null; d && d(); }
+    else raf = requestAnimationFrame(step);
+  }
+  return {
+    get x(){ return x; }, get v(){ return v; },
+    set(val){ x = val; v = 0; onUpdate(x); },
+    to(tgt, { response = .4, damping = 1, velocity = v } = {}, cb){
+      target = tgt; v = velocity; k = Math.pow(2 * Math.PI / response, 2); c = 2 * damping * Math.sqrt(k); done = cb || null;
+      if (!raf){ last = performance.now(); raf = requestAnimationFrame(step); }
+    },
+    stop(){ if (raf) cancelAnimationFrame(raf); raf = 0; done = null; }
+  };
+}
+const project = (v, d = 0.998) => (v / 1000) * d / (1 - d);
+const rubber = (o, dim, c = .55) => (o * dim * c) / (dim + c * Math.abs(o));
+const isMobile = () => matchMedia('(max-width:820px)').matches;
+const page = $('page'), sheetHead = $('sheetHead'), sheetBody = $('sheetBody'), panelLeft = $('panelLeft');
+let sheetH = 0, savedScroll = 0;
+const sheet = makeSpring(y => {
+  panel.style.transform = `translateY(${y}px)`;
+  const p = Math.max(0, Math.min(1, 1 - y / (sheetH || 1)));
+  backdrop.style.opacity = p;
+  page.style.transform = `scale(${1 - 0.035 * p})`;
+});
+function lockMobile(){ savedScroll = scrollY; document.body.style.top = -savedScroll + 'px'; document.body.classList.add('lock-fixed'); }
+function unlockMobile(){ document.body.classList.remove('lock-fixed'); document.body.style.top = ''; scrollTo(0, savedScroll); }
+
+function openSheet(card){
+  const i = Number(card.dataset.id);
+  fill(i); openCard = card;
+  overlay.classList.add('show'); sheetBody.scrollTop = 0; panel.classList.remove('out');
+  sheetH = panel.offsetHeight || innerHeight;
+  if (!panel.style.transform) sheet.set(sheetH);
+  lockMobile();
+  renderCurve(SNEAKERS[i]);
+  panel.classList.remove('in'); void panel.offsetWidth; panel.classList.add('in');
+  if (reduce){ sheet.set(0); return; }
+  sheet.to(0, { response: .46, damping: 1 });
+}
+function closeSheet(velocity){
+  if (!openCard) return;
+  const card = openCard;
+  const finish = () => { overlay.classList.remove('show'); panel.classList.remove('in'); panel.style.transform = ''; page.style.transform = ''; backdrop.style.opacity = '';
+    unlockMobile(); openCard = null; busy = false; card.focus({ preventScroll: true }); };
+  if (reduce){ finish(); return; }
+  sheet.to(sheetH, { response: .4, damping: 1, velocity: velocity || 0 }, finish);
+}
+// drag the sheet by its head: 1:1 tracking, rubber-band up, project momentum on release
+(() => {
+  let grab = 0, startY = 0, hist = [], active = false;
+  sheetHead.addEventListener('pointerdown', e => {
+    if (e.target.closest('.sheet-close')) return;
+    active = true; sheet.stop(); grab = e.clientY; startY = sheet.x; hist = [{ t: e.timeStamp, y: sheet.x }];
+    sheetHead.setPointerCapture(e.pointerId);
+  });
+  sheetHead.addEventListener('pointermove', e => {
+    if (!active) return;
+    let y = startY + (e.clientY - grab);
+    if (y < 0) y = rubber(y, sheetH);
+    sheet.set(y); hist.push({ t: e.timeStamp, y }); if (hist.length > 6) hist.shift();
+  });
+  const release = e => {
+    if (!active) return; active = false;
+    const a = hist[0], b = hist[hist.length - 1];
+    const v = (b.t - a.t) > 0 ? (b.y - a.y) / ((b.t - a.t) / 1000) : 0;   // px/s
+    const projected = sheet.x + project(v);
+    if (projected > sheetH * 0.42 || v > 900) closeSheet(Math.max(v, 400));
+    else sheet.to(0, { response: .4, damping: .85, velocity: v });
+  };
+  sheetHead.addEventListener('pointerup', release); sheetHead.addEventListener('pointercancel', release);
+})();
+// swipe the shoe left/right to move between pairs
+(() => {
+  let x0 = 0, y0 = 0, axis = null, hist = [], dx = 0, W = 0;
+  const shoe = makeSpring(x => { panelLeft.style.transform = `translateX(${x}px)`; panelLeft.style.opacity = 1 - Math.min(.6, Math.abs(x) / (W || 1)); });
+  panelLeft.addEventListener('pointerdown', e => { if (!isMobile()) return; axis = null; x0 = e.clientX; y0 = e.clientY; hist = [{ t: e.timeStamp, x: 0 }]; W = panelLeft.offsetWidth; shoe.stop(); });
+  panelLeft.addEventListener('pointermove', e => {
+    if (!isMobile() || axis === 'y') return;
+    const mx = e.clientX - x0, my = e.clientY - y0;
+    if (!axis){ if (Math.abs(mx) < 10 && Math.abs(my) < 10) return; axis = Math.abs(mx) > Math.abs(my) ? 'x' : 'y'; if (axis === 'x') panelLeft.setPointerCapture(e.pointerId); else return; }
+    dx = mx; shoe.set(dx * .9); hist.push({ t: e.timeStamp, x: dx }); if (hist.length > 6) hist.shift();
+  });
+  const release = e => {
+    if (axis !== 'x') { axis = null; return; }
+    axis = null;
+    const a = hist[0], b = hist[hist.length - 1];
+    const v = (b.t - a.t) > 0 ? (b.x - a.x) / ((b.t - a.t) / 1000) : 0;
+    const projected = dx + project(v, 0.995);
+    if (Math.abs(projected) > W * .3 || Math.abs(v) > 600){
+      const dir = (projected || dx) < 0 ? 1 : -1;               // swipe left -> next
+      shoe.to(-dir * W, { response: .32, damping: 1, velocity: v }, () => {
+        goTo(dir); shoe.set(dir * W); shoe.to(0, { response: .42, damping: 1 });
+      });
+    } else shoe.to(0, { response: .4, damping: .85, velocity: v });
+    dx = 0;
+  };
+  panelLeft.addEventListener('pointerup', release); panelLeft.addEventListener('pointercancel', release);
+})();
+$('sheetClose').addEventListener('click', () => closeSheet(0));
+$('barPrev').addEventListener('click', () => goTo(-1));
+$('barNext').addEventListener('click', () => goTo(1));
+
 function openDetail(card){
-  if (busy) return; busy = true;
+  if (busy) return;
+  if (isMobile()){ openSheet(card); return; }
+  busy = true;
   const i = Number(card.dataset.id);
   fill(i); openCard = card;
   document.body.classList.add('lock');
@@ -387,6 +552,7 @@ function openDetail(card){
   a1.onfinish = done; setTimeout(done, D + 300);
 }
 function closeDetail(){
+  if (isMobile() && openCard){ closeSheet(0); return; }
   if (busy || !openCard) return; busy = true;
   const card = openCard, i = Number(card.dataset.id);
   const panelR = rect(panel), panelImgR = rect(panelImgBox);
@@ -410,8 +576,8 @@ function goTo(d){
   const n = SNEAKERS.length, i = (Number(openCard.dataset.id) + d + n) % n;
   const card = grid.querySelector(`.card[data-id="${i}"]`);
   openCard.classList.remove('lifted'); openCard = card; card.classList.add('lifted');
-  card.scrollIntoView({block:'center'});
-  fill(i); panel.scrollTop = 0;
+  if (!isMobile()) card.scrollIntoView({block:'center'});
+  fill(i); panel.scrollTop = 0; sheetBody.scrollTop = 0;
   panel.classList.remove('in'); void panel.offsetWidth; panel.classList.add('in');
   renderCurve(SNEAKERS[i]);
 }
